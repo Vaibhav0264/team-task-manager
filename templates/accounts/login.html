@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Sign In{% endblock %}
+{% block auth_content %}
+<div style="min-height:100vh; background: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 50%, #7DD3FC 100%); display:flex; align-items:center; justify-content:center; padding:24px;">
+  <div style="width:100%; max-width:420px;">
+    <div style="text-align:center; margin-bottom:32px;">
+      <div style="font-family:'Poppins',sans-serif; font-weight:800; font-size:2.2rem; color:#1E293B; letter-spacing:-1px; margin-bottom:6px;">
+        Task<span style="color:#0284C7;">Flow</span>
+      </div>
+      <p style="color:rgba(30,41,59,0.7); font-size:0.9rem;">Sign in to your workspace</p>
+    </div>
+
+    {% if messages %}
+    {% for msg in messages %}
+    <div class="alert alert-danger py-2 mb-3">{{ msg }}</div>
+    {% endfor %}
+    {% endif %}
+
+    <div style="background:rgba(255,255,255,0.7); border:1px solid rgba(0,0,0,0.08); border-radius:16px; padding:32px; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
+      <form method="post">
+        {% csrf_token %}
+        <div class="mb-4">
+          <label class="form-label" style="color:rgba(0,0,0,0.7);">Username</label>
+          <input type="text" name="username" class="form-control" style="background:rgba(255,255,255,0.9); border-color:rgba(0,0,0,0.12); color:#333;" placeholder="your_username" value="{{ form.username.value|default_if_none:'' }}" required>
+        </div>
+        <div class="mb-4">
+          <label class="form-label" style="color:rgba(0,0,0,0.7);">Password</label>
+          <input type="password" name="password" class="form-control" style="background:rgba(255,255,255,0.9); border-color:rgba(0,0,0,0.12); color:#333;" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn w-100 py-2" style="background-color:#0284C7; color:white; border:none; font-size:0.95rem; font-weight:600;">
+          Sign In <i class="bi bi-arrow-right ms-1"></i>
+        </button>
+      </form>
+      <p style="text-align:center; margin-top:20px; color:rgba(0,0,0,0.6); font-size:0.85rem;">
+        No account? <a href="{% url 'signup' %}" style="color:#0284C7; text-decoration:none; font-weight:600;">Create one</a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

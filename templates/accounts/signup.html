@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Create Account{% endblock %}
+{% block auth_content %}
+<div style="min-height:100vh; background: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 50%, #7DD3FC 100%); display:flex; align-items:center; justify-content:center; padding:24px;">
+  <div style="width:100%; max-width:480px;">
+    <div style="text-align:center; margin-bottom:32px;">
+      <div style="font-family:'Poppins',sans-serif; font-weight:800; font-size:2.2rem; color:#1E293B; letter-spacing:-1px; margin-bottom:6px;">
+        Task<span style="color:#0284C7;">Flow</span>
+      </div>
+      <p style="color:rgba(30,41,59,0.7); font-size:0.9rem;">Create your account</p>
+    </div>
+
+    <div style="background:rgba(255,255,255,0.7); border:1px solid rgba(0,0,0,0.08); border-radius:16px; padding:32px; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
+      <form method="post">
+        {% csrf_token %}
+        <div class="row g-3 mb-3">
+          <div class="col-6">
+            <label class="form-label" style="color:rgba(0,0,0,0.7); font-size:0.83rem;">First Name</label>
+            <input type="text" name="first_name" class="form-control" style="background:rgba(255,255,255,0.9); border-color:rgba(0,0,0,0.12); color:#333;" value="{{ form.first_name.value|default_if_none:'' }}" required>
+          </div>
+          <div class="col-6">
+            <label class="form-label" style="color:rgba(0,0,0,0.7); font-size:0.83rem;">Last Name</label>
+            <input type="text" name="last_name" class="form-control" style="background:rgba(255,255,255,0.9); border-color:rgba(0,0,0,0.12); color:#333;" value="{{ form.last_name.value|default_if_none:'' }}" required>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" style="color:rgba(0,0,0,0.7); font-size:0.83rem;">Username</label>
+          <input type="text" name="username" class="form-control" style="background:rgba(255,255,255,0.9); border-color:rgba(0,0,0,0.12); color:#333;" value="{{ form.username.value|default_if_none:'' }}" required>
+          {% if form.username.errors %}<div style="color:#DC2626; font-size:0.78rem; margin-top:4px;">{{ form.username.errors.0 }}</div>{% endif %}
+        </div>
+        <div class="mb-3">
+          <label class="form-label" style="color:rgba(0,0,0,0.7); font-size:0.83rem;">Email</label>
+          <input type="email" name="email" class="form-control" style="background:rgba(255,255,255,0.9); border-color:rgba(0,0,0,0.12); color:#333;" value="{{ form.email.value|default_if_none:'' }}" required>
+        </div>
+        <p class="small mb-3" style="color:rgba(0,0,0,0.55);">New accounts are created as members. Admin access is assigned by operators (Django admin, seed script, or deploy setup).</p>
+        <div class="mb-3">
+          <label class="form-label" style="color:rgba(0,0,0,0.7); font-size:0.83rem;">Password</label>
+          <input type="password" name="password1" class="form-control" style="background:rgba(255,255,255,0.9); border-color:rgba(0,0,0,0.12); color:#333;" required>
+          {% if form.password1.errors %}<div style="color:#DC2626; font-size:0.78rem; margin-top:4px;">{{ form.password1.errors.0 }}</div>{% endif %}
+        </div>
+        <div class="mb-4">
+          <label class="form-label" style="color:rgba(0,0,0,0.7); font-size:0.83rem;">Confirm Password</label>
+          <input type="password" name="password2" class="form-control" style="background:rgba(255,255,255,0.9); border-color:rgba(0,0,0,0.12); color:#333;" required>
+          {% if form.password2.errors %}<div style="color:#DC2626; font-size:0.78rem; margin-top:4px;">{{ form.password2.errors.0 }}</div>{% endif %}
+        </div>
+        <button type="submit" class="btn w-100 py-2" style="background-color:#0284C7; color:white; border:none; font-size:0.95rem; font-weight:600;">
+          Create Account <i class="bi bi-arrow-right ms-1"></i>
+        </button>
+      </form>
+      <p style="text-align:center; margin-top:20px; color:rgba(0,0,0,0.6); font-size:0.85rem;">
+        Already have an account? <a href="{% url 'login' %}" style="color:#0284C7; text-decoration:none; font-weight:600;">Sign in</a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

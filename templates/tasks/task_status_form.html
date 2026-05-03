@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Update Task Status{% endblock %}
+{% block page_title %}Update Task Status{% endblock %}
+
+{% block content %}
+<div style="max-width:480px;">
+  <div class="card p-4">
+    <h5 class="font-display mb-1">Update Task Status</h5>
+    <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:24px;">{{ task.title }}</p>
+
+    <div style="background:var(--surface); border-radius:10px; padding:14px; margin-bottom:20px;">
+      <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:4px;">Current Status</div>
+      <span class="badge {{ task.status_badge_class }}">{{ task.get_status_display }}</span>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-4">
+        <label class="form-label">New Status</label>
+        {{ form.status }}
+      </div>
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Update Status</button>
+        <a href="{% url 'project_detail' task.project.pk %}" class="btn btn-light">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}All Tasks{% endblock %}
+{% block page_title %}All Tasks{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h4 class="font-display mb-0">Tasks</h4>
+</div>
+
+<!-- Filters -->
+<div class="card p-3 mb-4">
+  <form method="get" class="d-flex align-items-end gap-3 flex-wrap">
+    <div>
+      <label class="form-label mb-1" style="font-size:0.8rem;">Status</label>
+      <select name="status" class="form-select form-select-sm" style="width:140px;" onchange="this.form.submit()">
+        <option value="">All Statuses</option>
+        {% for val, label in status_choices %}
+        <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label class="form-label mb-1" style="font-size:0.8rem;">Project</label>
+      <select name="project" class="form-select form-select-sm" style="width:180px;" onchange="this.form.submit()">
+        <option value="">All Projects</option>
+        {% for p in projects %}
+        <option value="{{ p.pk }}" {% if project_filter == p.pk|stringformat:"s" %}selected{% endif %}>{{ p.title }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% if status_filter or project_filter %}
+    <a href="{% url 'task_list' %}" class="btn btn-sm btn-light">Clear filters</a>
+    {% endif %}
+  </form>
+</div>
+
+{% if tasks %}
+<div class="card p-0 overflow-hidden">
+  <table class="table mb-0">
+    <thead>
+      <tr>
+        <th style="padding:14px 20px;">Task</th>
+        <th>Project</th>
+        <th>Assigned To</th>
+        <th>Priority</th>
+        <th>Status</th>
+        <th>Due Date</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for task in tasks %}
+      <tr {% if task.is_overdue %}style="background:rgba(239,68,68,0.03);"{% endif %}>
+        <td style="padding:14px 20px;">
+          <a href="{% url 'task_detail' task.pk %}" style="text-decoration:none; color:inherit; font-weight:500; font-size:0.9rem;">
+            {{ task.title }}
+          </a>
+          {% if task.is_overdue %}<span class="badge badge-overdue ms-2">Overdue</span>{% endif %}
+        </td>
+        <td>
+          <a href="{% url 'project_detail' task.project.pk %}" style="text-decoration:none; color:var(--accent); font-size:0.85rem;">
+            {{ task.project.title }}
+          </a>
+        </td>
+        <td>
+          {% if task.assigned_to %}
+          <div class="d-flex align-items-center gap-2">
+            <div class="user-avatar" style="width:24px; height:24px; border-radius:6px; font-size:0.65rem; flex-shrink:0;">{{ task.assigned_to.avatar_initials }}</div>
+            <span style="font-size:0.83rem;">{{ task.assigned_to.get_full_name|default:task.assigned_to.username }}</span>
+          </div>
+          {% else %}
+          <span style="color:var(--text-muted); font-size:0.83rem;">—</span>
+          {% endif %}
+        </td>
+        <td><span class="badge {{ task.priority_badge_class }}">{{ task.get_priority_display }}</span></td>
+        <td><span class="badge {{ task.status_badge_class }}">{{ task.get_status_display }}</span></td>
+        <td style="font-size:0.83rem; {% if task.is_overdue %}color:var(--danger);{% else %}color:var(--text-muted);{% endif %}">
+          {% if task.due_date %}{{ task.due_date }}{% else %}—{% endif %}
+        </td>
+        <td>
+          {% if user.is_admin %}
+          <a href="{% url 'task_edit' task.pk %}" class="btn btn-sm btn-light me-1"><i class="bi bi-pencil"></i></a>
+          {% elif task.assigned_to == user %}
+          <a href="{% url 'task_edit' task.pk %}" class="btn btn-sm btn-light">Update</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <i class="bi bi-check2-square d-block"></i>
+  <h5>No tasks found</h5>
+  <p style="font-size:0.85rem;">Try adjusting your filters.</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}TaskFlow{% endblock %} — TeamTaskManager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root {
+      --brand: #0F172A;
+      --brand-mid: #1E293B;
+      --accent: #6366F1;
+      --accent-light: #818CF8;
+      --accent-glow: rgba(99,102,241,0.15);
+      --surface: #F8FAFC;
+      --card: #FFFFFF;
+      --border: #E2E8F0;
+      --text: #0F172A;
+      --text-muted: #64748B;
+      --todo: #F59E0B;
+      --progress: #3B82F6;
+      --done: #10B981;
+      --high: #EF4444;
+      --medium: #F59E0B;
+      --low: #10B981;
+      --danger: #EF4444;
+      --sidebar-w: 260px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--surface);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    h1, h2, h3, h4, h5, h6, .font-display { font-family: 'DM Sans', sans-serif; font-weight: 700; }
+
+    .sidebar {
+      position: fixed; top: 0; left: 0;
+      width: var(--sidebar-w); height: 100vh;
+      background: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 50%, #7DD3FC 100%);
+      border-right: 1px solid rgba(0,0,0,0.08);
+      display: flex; flex-direction: column;
+      z-index: 100; overflow-y: auto;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar-logo {
+      padding: 28px 24px 20px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .sidebar-logo .logo-mark {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800; font-size: 1.4rem;
+      color: #1E293B; letter-spacing: -0.5px;
+    }
+
+    .sidebar-logo .logo-mark span { color: #0284C7; }
+
+    .sidebar-nav { padding: 16px 12px; flex: 1; }
+
+    .nav-section-label {
+      font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em;
+      text-transform: uppercase; color: rgba(0,0,0,0.4);
+      padding: 12px 12px 6px;
+    }
+
+    .sidebar-link {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 8px;
+      color: rgba(0,0,0,0.7); text-decoration: none;
+      font-size: 0.9rem; font-weight: 500; transition: all 0.15s;
+      margin-bottom: 2px;
+    }
+
+    .sidebar-link:hover, .sidebar-link.active {
+      background: rgba(0,0,0,0.05);
+      color: #000;
+    }
+
+    .sidebar-link.active { background: rgba(2,132,199,0.1); color: #0284C7; font-weight: 600; }
+    .sidebar-link i { font-size: 1rem; width: 18px; text-align: center; }
+
+    .sidebar-user {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .user-avatar {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: var(--accent); color: #fff;
+      font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 0.8rem;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .user-avatar.admin { background: linear-gradient(135deg, var(--accent), #8B5CF6); }
+
+    /* Main content */
+    .main-content {
+      margin-left: var(--sidebar-w);
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+    }
+
+    .topbar {
+      background: var(--card); border-bottom: 1px solid var(--border);
+      padding: 14px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+    }
+
+    .page-area { padding: 32px; flex: 1; }
+
+    /* Cards */
+    .card {
+      border: 1px solid var(--border); border-radius: 14px;
+      background: var(--card); box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .stat-card {
+      border-radius: 14px; padding: 24px;
+      border: 1px solid var(--border); background: var(--card);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.07); }
+
+    .stat-card .stat-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; margin-bottom: 14px;
+    }
+
+    .stat-card .stat-value {
+      font-family: 'DM Sans', sans-serif; font-size: 2rem; font-weight: 700;
+      line-height: 1;
+    }
+
+    .stat-card .stat-label {
+      font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; font-weight: 500;
+    }
+
+    /* Badges */
+    .badge-todo { background: rgba(245,158,11,0.12); color: #B45309; font-weight: 500; }
+    .badge-progress { background: rgba(59,130,246,0.12); color: #1D4ED8; font-weight: 500; }
+    .badge-done { background: rgba(16,185,129,0.12); color: #065F46; font-weight: 500; }
+    .badge-high { background: rgba(239,68,68,0.12); color: #B91C1C; font-weight: 500; }
+    .badge-medium { background: rgba(245,158,11,0.12); color: #B45309; font-weight: 500; }
+    .badge-low { background: rgba(16,185,129,0.12); color: #065F46; font-weight: 500; }
+    .badge-overdue { background: rgba(239,68,68,0.12); color: #B91C1C; font-weight: 500; }
+
+    .badge { border-radius: 6px; font-size: 0.72rem; padding: 3px 8px; }
+
+    /* Task cards */
+    .task-card {
+      border: 1px solid var(--border); border-radius: 10px;
+      padding: 16px; background: var(--card);
+      transition: box-shadow 0.2s, transform 0.15s;
+      cursor: pointer;
+    }
+    .task-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); transform: translateY(-1px); }
+    .task-card.overdue { border-left: 3px solid var(--danger); }
+
+    /* Project cards */
+    .project-card {
+      border: 1px solid var(--border); border-radius: 14px;
+      background: var(--card); padding: 24px;
+      transition: box-shadow 0.2s, transform 0.15s; text-decoration: none; color: inherit;
+      display: block;
+    }
+    .project-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.09); transform: translateY(-2px); }
+
+    .progress-bar-track { background: var(--border); border-radius: 999px; height: 6px; }
+    .progress-bar-fill { border-radius: 999px; height: 100%; transition: width 0.5s ease; }
+
+    /* Forms */
+    .form-control, .form-select {
+      border: 1.5px solid var(--border); border-radius: 8px;
+      font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+      padding: 10px 14px; transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); outline: none;
+    }
+    label.form-label { font-weight: 500; font-size: 0.85rem; margin-bottom: 6px; }
+
+    /* Buttons */
+    .btn { font-family: 'DM Sans', sans-serif; font-weight: 500; border-radius: 8px; }
+    .btn-primary { background: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 50%, #7DD3FC 100%); border: 1px solid rgba(0,0,0,0.05); color: #1E293B; font-weight: 600; }
+    .btn-primary:hover { background: linear-gradient(135deg, #BAE6FD 0%, #7DD3FC 50%, #38BDF8 100%); color: #000; border-color: rgba(0,0,0,0.1); }
+    .btn-sm { padding: 5px 12px; font-size: 0.82rem; }
+
+    /* Alerts */
+    .alert { border-radius: 10px; border: none; font-size: 0.9rem; }
+
+    /* Tables */
+    .table { font-size: 0.88rem; }
+    .table thead th { font-weight: 600; color: var(--text-muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1.5px solid var(--border); }
+    .table td { vertical-align: middle; }
+
+    /* Member avatars */
+    .avatar-group { display: flex; }
+    .avatar-xs {
+      width: 26px; height: 26px; border-radius: 7px;
+      background: var(--accent); color: #fff;
+      font-size: 0.65rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      border: 2px solid var(--card); margin-left: -6px;
+    }
+    .avatar-xs:first-child { margin-left: 0; }
+
+    /* Empty state */
+    .empty-state { text-align: center; padding: 60px 24px; color: var(--text-muted); }
+    .empty-state i { font-size: 3rem; opacity: 0.25; margin-bottom: 16px; }
+    .empty-state h5 { font-family: 'DM Sans', sans-serif; color: var(--text); font-weight: 600; }
+
+    /* Role pill */
+    .role-admin { background: rgba(99,102,241,0.1); color: var(--accent); font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
+    .role-member { background: rgba(100,116,139,0.1); color: var(--text-muted); font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
+
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main-content { margin-left: 0; }
+      .page-area { padding: 20px 16px; }
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+{% if user.is_authenticated %}
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">Task<span>Flow</span></div>
+    <div style="font-size:0.72rem; color:rgba(0,0,0,0.5); margin-top:2px;">Team Task Manager</div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Navigation</div>
+    <a href="{% url 'dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+      <i class="bi bi-grid-1x2"></i> Dashboard
+    </a>
+    <a href="{% url 'project_list' %}" class="sidebar-link {% if 'project' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="bi bi-folder2"></i> Projects
+    </a>
+    <a href="{% url 'task_list' %}" class="sidebar-link {% if 'task' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="bi bi-check2-square"></i> All Tasks
+    </a>
+
+    {% if user.is_admin %}
+    <div class="nav-section-label" style="margin-top:8px;">Admin</div>
+    <a href="{% url 'project_create' %}" class="sidebar-link">
+      <i class="bi bi-plus-square"></i> New Project
+    </a>
+    <a href="/api/" class="sidebar-link" target="_blank">
+      <i class="bi bi-code-slash"></i> REST API
+    </a>
+    <a href="/admin/" class="sidebar-link" target="_blank">
+      <i class="bi bi-shield-check"></i> Django Admin
+    </a>
+    {% endif %}
+  </nav>
+
+  <div class="sidebar-user">
+    <div class="d-flex align-items-center gap-2">
+      <div class="user-avatar {% if user.is_admin %}admin{% endif %}">{{ user.avatar_initials }}</div>
+      <div style="min-width:0;">
+        <div style="font-size:0.82rem; font-weight:600; color:#1E293B; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ user.get_full_name|default:user.username }}</div>
+        <span class="role-{% if user.is_admin %}admin{% else %}member{% endif %}">{{ user.role }}</span>
+      </div>
+      <a href="{% url 'logout' %}" class="ms-auto" style="color:rgba(0,0,0,0.4);" title="Logout">
+        <i class="bi bi-box-arrow-right"></i>
+      </a>
+    </div>
+  </div>
+</aside>
+
+<div class="main-content">
+  <header class="topbar">
+    <div class="d-flex align-items-center gap-3">
+      <button class="btn btn-sm d-md-none" onclick="document.getElementById('sidebar').classList.toggle('open')">
+        <i class="bi bi-list fs-5"></i>
+      </button>
+      <h6 class="mb-0 font-display fw-700" style="font-size:1rem;">{% block page_title %}Dashboard{% endblock %}</h6>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <a href="{% url 'profile' %}" class="btn btn-sm btn-light">
+        <i class="bi bi-person me-1"></i> Profile
+      </a>
+    </div>
+  </header>
+
+  <main class="page-area">
+    {% if messages %}
+    <div style="margin-bottom:20px;">
+      {% for msg in messages %}
+      <div class="alert alert-{% if msg.tags == 'error' %}danger{% else %}{{ msg.tags }}{% endif %} alert-dismissible fade show py-2">
+        {{ msg }} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+  </main>
+</div>
+
+{% else %}
+<main>{% block auth_content %}{% endblock %}</main>
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}{{ task.title }}{% endblock %}
+{% block page_title %}Task Detail{% endblock %}
+
+{% block content %}
+<div style="max-width:760px;">
+  <div class="d-flex align-items-center gap-2 mb-4" style="font-size:0.83rem; color:var(--text-muted);">
+    <a href="{% url 'project_list' %}" style="color:var(--text-muted); text-decoration:none;">Projects</a>
+    <span>/</span>
+    <a href="{% url 'project_detail' task.project.pk %}" style="color:var(--text-muted); text-decoration:none;">{{ task.project.title }}</a>
+    <span>/</span>
+    <span>{{ task.title }}</span>
+  </div>
+
+  <div class="card p-4">
+    <div class="d-flex align-items-start justify-content-between gap-3 mb-4">
+      <div>
+        <h4 class="font-display mb-2">{{ task.title }}</h4>
+        <div class="d-flex gap-2 flex-wrap">
+          <span class="badge {{ task.status_badge_class }}">{{ task.get_status_display }}</span>
+          <span class="badge {{ task.priority_badge_class }}">{{ task.get_priority_display }} Priority</span>
+          {% if task.is_overdue %}<span class="badge badge-overdue">Overdue</span>{% endif %}
+        </div>
+      </div>
+      {% if user.is_admin %}
+      <div class="d-flex gap-2">
+        <a href="{% url 'task_edit' task.pk %}" class="btn btn-primary btn-sm">
+          <i class="bi bi-pencil me-1"></i> Edit
+        </a>
+        <a href="{% url 'task_delete' task.pk %}" class="btn btn-light btn-sm text-danger">
+          <i class="bi bi-trash"></i>
+        </a>
+      </div>
+      {% elif task.assigned_to == user %}
+      <a href="{% url 'task_edit' task.pk %}" class="btn btn-primary btn-sm">Update Status</a>
+      {% endif %}
+    </div>
+
+    {% if task.description %}
+    <div style="background:var(--surface); border-radius:10px; padding:16px; margin-bottom:20px;">
+      <p style="font-size:0.9rem; margin:0; line-height:1.7;">{{ task.description }}</p>
+    </div>
+    {% endif %}
+
+    <div class="row g-3">
+      <div class="col-sm-6">
+        <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">Project</div>
+        <a href="{% url 'project_detail' task.project.pk %}" style="text-decoration:none; color:var(--accent); font-weight:500; font-size:0.88rem;">
+          {{ task.project.title }}
+        </a>
+      </div>
+      <div class="col-sm-6">
+        <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">Assigned To</div>
+        {% if task.assigned_to %}
+        <div class="d-flex align-items-center gap-2">
+          <div class="user-avatar" style="width:28px; height:28px; border-radius:7px; font-size:0.68rem;">{{ task.assigned_to.avatar_initials }}</div>
+          <span style="font-size:0.88rem; font-weight:500;">{{ task.assigned_to.get_full_name|default:task.assigned_to.username }}</span>
+        </div>
+        {% else %}
+        <span style="color:var(--text-muted); font-size:0.88rem;">Unassigned</span>
+        {% endif %}
+      </div>
+      <div class="col-sm-6">
+        <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">Due Date</div>
+        <span style="font-size:0.88rem; {% if task.is_overdue %}color:var(--danger); font-weight:600;{% endif %}">
+          {% if task.due_date %}{{ task.due_date }}{% else %}No due date{% endif %}
+        </span>
+      </div>
+      <div class="col-sm-6">
+        <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">Created By</div>
+        <span style="font-size:0.88rem;">{{ task.created_by.get_full_name|default:task.created_by.username }}</span>
+      </div>
+      <div class="col-sm-6">
+        <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">Created</div>
+        <span style="font-size:0.88rem;">{{ task.created_at|date:"M d, Y" }}</span>
+      </div>
+      <div class="col-sm-6">
+        <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">Last Updated</div>
+        <span style="font-size:0.88rem;">{{ task.updated_at|date:"M d, Y H:i" }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-3">
+    <a href="{% url 'project_detail' task.project.pk %}" class="btn btn-light btn-sm">
+      <i class="bi bi-arrow-left me-1"></i> Back to Project
+    </a>
+  </div>
+</div>
+{% endblock %}

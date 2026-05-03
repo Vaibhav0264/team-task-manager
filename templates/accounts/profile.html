@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Profile{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+{% block content %}
+<div class="row g-4" style="max-width:700px;">
+  <div class="col-12">
+    <div class="card p-0 overflow-hidden">
+      <div style="background: linear-gradient(135deg, var(--brand) 0%, var(--brand-mid) 100%); padding: 32px; display:flex; align-items:center; gap:20px;">
+        <div class="user-avatar {% if user.is_admin %}admin{% endif %}" style="width:64px; height:64px; border-radius:16px; font-size:1.4rem;">{{ user.avatar_initials }}</div>
+        <div>
+          <h4 style="color:#fff; margin:0; font-family:'Syne',sans-serif;">{{ user.get_full_name|default:user.username }}</h4>
+          <div style="margin-top:4px;"><span class="role-{% if user.is_admin %}admin{% else %}member{% endif %}">{{ user.role }}</span></div>
+        </div>
+      </div>
+      <div class="p-4">
+        <form method="post">
+          {% csrf_token %}
+          <div class="row g-3">
+            <div class="col-6">
+              <label class="form-label">First Name</label>
+              {{ form.first_name }}
+            </div>
+            <div class="col-6">
+              <label class="form-label">Last Name</label>
+              {{ form.last_name }}
+            </div>
+            <div class="col-12">
+              <label class="form-label">Email</label>
+              {{ form.email }}
+            </div>
+            <div class="col-12">
+              <label class="form-label">Bio</label>
+              {{ form.bio }}
+            </div>
+          </div>
+          <div class="mt-4">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

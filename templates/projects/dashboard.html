@@ -1,0 +1,254 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+
+{% if user.is_admin %}
+<!-- ADMIN DASHBOARD -->
+<div class="mb-4 d-flex align-items-center justify-content-between">
+  <div>
+    <h4 class="font-display mb-1">Welcome back, {{ user.first_name|default:user.username }} 👋</h4>
+    <p class="text-muted mb-0" style="font-size:0.88rem;">Here's what's happening across all projects</p>
+  </div>
+  <a href="{% url 'project_create' %}" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i> New Project
+  </a>
+</div>
+
+<!-- Stats row -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(99,102,241,0.1); color:var(--accent);">
+        <i class="bi bi-folder2"></i>
+      </div>
+      <div class="stat-value">{{ total_projects }}</div>
+      <div class="stat-label">Total Projects</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(245,158,11,0.1); color:var(--todo);">
+        <i class="bi bi-circle"></i>
+      </div>
+      <div class="stat-value">{{ todo_tasks }}</div>
+      <div class="stat-label">To Do</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(59,130,246,0.1); color:var(--progress);">
+        <i class="bi bi-arrow-clockwise"></i>
+      </div>
+      <div class="stat-value">{{ in_progress_tasks }}</div>
+      <div class="stat-label">In Progress</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(16,185,129,0.1); color:var(--done);">
+        <i class="bi bi-check-circle"></i>
+      </div>
+      <div class="stat-value">{{ done_tasks }}</div>
+      <div class="stat-label">Completed</div>
+    </div>
+  </div>
+</div>
+
+{% if overdue_count > 0 %}
+<div class="alert" style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2); color:#B91C1C; border-radius:10px; margin-bottom:24px;">
+  <i class="bi bi-exclamation-triangle me-2"></i>
+  <strong>{{ overdue_count }} overdue task{{ overdue_count|pluralize }}</strong> need attention.
+  <a href="{% url 'task_list' %}?status=todo" class="ms-2" style="color:#B91C1C; font-weight:600;">View tasks →</a>
+</div>
+{% endif %}
+
+<div class="row g-4">
+  <!-- Projects -->
+  <div class="col-lg-7">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h6 class="font-display mb-0">Projects Overview</h6>
+      <a href="{% url 'project_list' %}" class="btn btn-sm btn-light">View all</a>
+    </div>
+    {% if projects %}
+    <div class="d-flex flex-column gap-3">
+      {% for project in projects|slice:":5" %}
+      {% with stats=project.get_task_stats %}
+      <a href="{% url 'project_detail' project.pk %}" class="project-card" style="padding:18px;">
+        <div class="d-flex align-items-start justify-content-between mb-2">
+          <div>
+            <div style="font-family:'Syne',sans-serif; font-weight:600; font-size:0.95rem;">{{ project.title }}</div>
+            <div style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;">{{ stats.total }} task{{ stats.total|pluralize }}</div>
+          </div>
+          <div class="avatar-group">
+            {% for member in project.members.all|slice:":4" %}
+            <div class="avatar-xs" title="{{ member.get_full_name }}">{{ member.avatar_initials }}</div>
+            {% endfor %}
+          </div>
+        </div>
+        {% if stats.total > 0 %}
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" style="width:{% widthratio stats.done stats.total 100 %}%; background:var(--done);"></div>
+        </div>
+        <div style="font-size:0.72rem; color:var(--text-muted); margin-top:4px;">
+          {% widthratio stats.done stats.total 100 %}% complete
+        </div>
+        {% endif %}
+      </a>
+      {% endwith %}
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <i class="bi bi-folder2-open d-block"></i>
+      <h5>No projects yet</h5>
+      <a href="{% url 'project_create' %}" class="btn btn-primary btn-sm mt-2">Create First Project</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Recent tasks + overdue -->
+  <div class="col-lg-5">
+    {% if overdue_tasks %}
+    <div class="mb-4">
+      <h6 class="font-display mb-3" style="color:var(--danger);">
+        <i class="bi bi-exclamation-circle me-1"></i> Overdue Tasks
+      </h6>
+      <div class="d-flex flex-column gap-2">
+        {% for task in overdue_tasks %}
+        <a href="{% url 'task_detail' task.pk %}" class="task-card overdue" style="text-decoration:none; color:inherit;">
+          <div style="font-size:0.88rem; font-weight:500; margin-bottom:4px;">{{ task.title }}</div>
+          <div style="font-size:0.75rem; color:var(--text-muted);">
+            {{ task.project.title }} · Due {{ task.due_date }}
+            {% if task.assigned_to %} · {{ task.assigned_to.get_full_name }}{% endif %}
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <h6 class="font-display mb-3">Recent Tasks</h6>
+    <div class="d-flex flex-column gap-2">
+      {% for task in recent_tasks %}
+      <a href="{% url 'task_detail' task.pk %}" class="task-card" style="text-decoration:none; color:inherit;">
+        <div class="d-flex align-items-start justify-content-between">
+          <div style="font-size:0.88rem; font-weight:500;">{{ task.title }}</div>
+          <span class="badge {{ task.status_badge_class }}">{{ task.get_status_display }}</span>
+        </div>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:3px;">{{ task.project.title }}</div>
+      </a>
+      {% empty %}
+      <p style="color:var(--text-muted); font-size:0.85rem;">No tasks yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% else %}
+<!-- MEMBER DASHBOARD -->
+<div class="mb-4">
+  <h4 class="font-display mb-1">Welcome back, {{ user.first_name|default:user.username }} 👋</h4>
+  <p class="text-muted mb-0" style="font-size:0.88rem;">Here are your assigned tasks</p>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(99,102,241,0.1); color:var(--accent);">
+        <i class="bi bi-list-task"></i>
+      </div>
+      <div class="stat-value">{{ total_assigned }}</div>
+      <div class="stat-label">Assigned to Me</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(245,158,11,0.1); color:var(--todo);">
+        <i class="bi bi-circle"></i>
+      </div>
+      <div class="stat-value">{{ todo_tasks }}</div>
+      <div class="stat-label">To Do</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(59,130,246,0.1); color:var(--progress);">
+        <i class="bi bi-arrow-clockwise"></i>
+      </div>
+      <div class="stat-value">{{ in_progress_tasks }}</div>
+      <div class="stat-label">In Progress</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(16,185,129,0.1); color:var(--done);">
+        <i class="bi bi-check-circle"></i>
+      </div>
+      <div class="stat-value">{{ done_tasks }}</div>
+      <div class="stat-label">Completed</div>
+    </div>
+  </div>
+</div>
+
+{% if overdue_count > 0 %}
+<div class="alert" style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2); color:#B91C1C; margin-bottom:24px;">
+  <i class="bi bi-exclamation-triangle me-2"></i>
+  <strong>{{ overdue_count }} overdue task{{ overdue_count|pluralize }}</strong>
+</div>
+{% endif %}
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <h6 class="font-display mb-3">My Tasks</h6>
+    {% if assigned_tasks %}
+    <div class="d-flex flex-column gap-2">
+      {% for task in assigned_tasks %}
+      <div class="task-card {% if task.is_overdue %}overdue{% endif %}">
+        <div class="d-flex align-items-start justify-content-between gap-3">
+          <div style="min-width:0;">
+            <a href="{% url 'task_detail' task.pk %}" style="text-decoration:none; color:inherit;">
+              <div style="font-size:0.9rem; font-weight:500; margin-bottom:3px;">{{ task.title }}</div>
+            </a>
+            <div style="font-size:0.75rem; color:var(--text-muted);">
+              {{ task.project.title }}{% if task.due_date %} · Due {{ task.due_date }}{% endif %}
+              {% if task.is_overdue %}<span class="badge badge-overdue ms-1">Overdue</span>{% endif %}
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2 flex-shrink-0">
+            <span class="badge {{ task.priority_badge_class }}">{{ task.get_priority_display }}</span>
+            <a href="{% url 'task_edit' task.pk %}" class="btn btn-sm btn-light" title="Update Status">
+              <span class="badge {{ task.status_badge_class }}">{{ task.get_status_display }}</span>
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <i class="bi bi-check2-all d-block"></i>
+      <h5>No tasks assigned yet</h5>
+      <p style="font-size:0.85rem;">Check back when your admin assigns tasks.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="col-lg-4">
+    <h6 class="font-display mb-3">My Projects</h6>
+    {% for project in projects %}
+    <a href="{% url 'project_detail' project.pk %}" class="project-card mb-3" style="padding:16px;">
+      <div style="font-family:'Syne',sans-serif; font-weight:600; font-size:0.9rem;">{{ project.title }}</div>
+      <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">
+        {{ project.tasks.count }} task{{ project.tasks.count|pluralize }}
+      </div>
+    </a>
+    {% empty %}
+    <p style="color:var(--text-muted); font-size:0.85rem;">Not assigned to any projects yet.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
